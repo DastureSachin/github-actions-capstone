@@ -1,0 +1,59 @@
+name: Reusable Build and Test
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        description: Python version
+        required: false
+        type: string
+        default: "3.12"
+      run_tests:
+        description: Run automated tests
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      test_result:
+        description: Test result
+        value: ${{ jobs.build-test.outputs.test_result }}
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    outputs:
+      test_result: ${{ steps.result.outputs.status }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        id: tests
+        if: ${{ inputs.run_tests }}
+        run: python -m pytest -v
+
+      - name: Set test result
+        id: result
+        if: always()
+        env:
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+          RUN_TESTS: ${{ inputs.run_tests }}
+        run: |
+          if [ "$RUN_TESTS" = "false" ]; then
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+          elif [ "$TEST_OUTCOME" = "success" ]; then
+            echo "status=passed" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=failed" >> "$GITHUB_OUTPUT"
+          fi
