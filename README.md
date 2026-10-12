@@ -59,7 +59,4 @@ Open `http://localhost:5000/health` to check the health endpoint.
 
 Configure `DOCKER_USERNAME` and `DOCKER_TOKEN` in the repository Actions secrets.
 
-## Documentation
-
-See [`2026/day-48/day-48-actions-project.md`](2026/day-48/day-48-actions-project.md) for the full project notes and validation checklist.
 
